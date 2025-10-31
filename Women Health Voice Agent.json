@@ -1,0 +1,738 @@
+{
+  "name": "Women Health Voice Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-pro",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -3232,
+        2416
+      ],
+      "id": "245a4618-46e2-4de9-a963-5003606029be",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ZYQac3CURh8djynJ",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "\"user_session\""
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        -3104,
+        2416
+      ],
+      "id": "af174abd-280d-476f-8e31-6ab2957d37b0",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "EbtqnYk8oxtzbbNG",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "1d510771-d84d-4d3c-9eff-5b43d5b10857",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -3456,
+        2192
+      ],
+      "id": "b3833e5a-66f3-40b7-8a9c-6f7f46ebf8c5",
+      "name": "Webhook",
+      "webhookId": "1d510771-d84d-4d3c-9eff-5b43d5b10857"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -2896,
+        2624
+      ],
+      "id": "b11b9f11-98ac-45a9-b8ed-1e7fa7c08389",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ZYQac3CURh8djynJ",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Code Node: Parse Triaged Data\n// Access input data correctly\nconst data = $json.output;\n\nreturn [\n  {\n    json: {\n      name: data.name || \"Unknown\",\n      age: data.age || 0,\n      symptoms: data.symptoms || [],\n      duration: data.duration || \"Unknown\",\n      severity: data.severity || \"Unknown\",\n      triage_score: data.triage_score || 0,\n      triage_category: data.triage_category || \"wellness_plan\",\n      notes: data.notes || \"\"\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2608,
+        2192
+      ],
+      "id": "d9cb20f7-42f9-43ea-8e61-84e93b4cf8c1",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.triage_category }}",
+                    "rightValue": "wellness_plan",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "f0c88f32-9d85-4cca-b6e0-73e9db7abc03"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "wellness_plan"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "31636c4b-f6cf-495f-938a-5204e2ecd776",
+                    "leftValue": "={{ $json.triage_category }}",
+                    "rightValue": "doctor_review",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "doctor_review"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "f4772a27-9a7d-464c-abb3-ba953e5d01e8",
+                    "leftValue": "={{ $json.triage_category }}",
+                    "rightValue": "red_alert",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "red_alert"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -2384,
+        2176
+      ],
+      "id": "ffcbfa3e-8760-446e-a977-69f42cd67a62",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "78da169d-2934-4a3e-9140-c6b2e5e3ddeb",
+      "name": "Google Gemini Chat Model2",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1520,
+        2304
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ZYQac3CURh8djynJ",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "EMERGENCY_CONTACT_EMAIL",
+        "subject": "=URGENT: Red Alert - Immediate Medical Attention Required for {{ $json.name }}",
+        "emailType": "text",
+        "message": "=RED ALERT - Immediate medical attention required.\n\nPatient: {{ $('Code in JavaScript').item.json.name }}\nAge: {{ $('Code in JavaScript').item.json.age }}\nSymptoms: {{ $json.symptoms }}\nDuration: {{ $json.duration }}\nSeverity: {{ $json.severity }}\nTriage Score: {{ $json.triage_score }}\n\nNotes: {{ $json.notes }}\n\nPlease contact the patient immediately.",
+        "options": {}
+      },
+      "id": "c3f2a496-ca51-4eaa-96f3-de432e0271d8",
+      "name": "Send Red Alert Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -1520,
+        1888
+      ],
+      "webhookId": "311905c7-66d5-43de-b3ce-5a0d9ecff1a3",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Y0r9wt8sEAOpEXnM",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "maddimass23@gmail.com",
+          "mode": "list",
+          "cachedResultName": "madeeha_50@yahoo.com"
+        },
+        "start": "={{ $now.plus(1, 'day').set({ hour: 10, minute: 0 }) }}",
+        "end": "={{ $now.plus(1, 'day').set({ hour: 11, minute: 0 }) }}",
+        "additionalFields": {
+          "description": "=Women's Health Telehealth Consultation\n{{ $('Code in JavaScript').item.json.name }}\nPatient:\n{{ $('Code in JavaScript').item.json.age }}Age: \nSymptoms: {{ $('Code in JavaScript').item.json.symptoms }}\nDuration:{{ $('Code in JavaScript').item.json.duration }}\nSeverity:{{ $('Code in JavaScript').item.json.severity }}"
+        }
+      },
+      "id": "0bf05afa-699d-4160-a90e-b57c2761c948",
+      "name": "Book Doctor Appointment",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        -1808,
+        2480
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "4D9V9pO4KMki9rDb",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "2b807132-b298-44fc-9bbd-4739418d279a",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -1232,
+        2192
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "834661596394771",
+        "recipientPhoneNumber": "923264897218",
+        "textBody": "={{ $('Doctor Appointment Agent2').item.json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        -1520,
+        2480
+      ],
+      "id": "8bd7bf05-1f8d-4602-b9d1-14a188da77ac",
+      "name": "Send message",
+      "webhookId": "8b0091f8-2bee-4154-af37-2eb937824252",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "Oz5JjQY2dOtlrd96",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"name\": {\n      \"type\": \"string\",\n      \"description\": \"Name of the patient\"\n    },\n    \"age\": {\n      \"type\": \"number\",\n      \"description\": \"Age of the patient in years\"\n    },\n    \"symptoms\": {\n      \"type\": \"array\",\n      \"description\": \"List of reported symptoms\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"duration\": {\n      \"type\": \"string\",\n      \"description\": \"Duration of symptoms\"\n    },\n    \"severity\": {\n      \"type\": \"string\",\n      \"description\": \"Severity of symptoms (mild, moderate, severe)\"\n    },\n    \"triage_score\": {\n      \"type\": \"number\",\n      \"description\": \"Numerical triage score calculated by the AI\"\n    },\n    \"triage_category\": {\n      \"type\": \"string\",\n      \"description\": \"Triage classification such as doctor_review or wellness_plan\"\n    },\n    \"notes\": {\n      \"type\": \"string\",\n      \"description\": \"Detailed clinical notes or summary\"\n    }\n  },\n  \"required\": [\n    \"name\",\n    \"age\",\n    \"symptoms\",\n    \"duration\",\n    \"severity\",\n    \"triage_score\",\n    \"triage_category\",\n    \"notes\"\n  ]\n}\n",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -2976,
+        2416
+      ],
+      "id": "0e6cd68a-de50-4659-b3e6-7c1c2650451d",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Name:{{ $json.body.message.toolCalls[0].function.arguments.Name }}\nAge:{{ $json.body.message.toolCalls[0].function.arguments.Age }}\nSymptoms:\n{{ $json.body.message.toolCalls[0].function.arguments.Symtoms }}\nDuration:{{ $json.body.message.toolCalls[0].function.arguments.duration }}\nSeverity:{{ $json.body.message.toolCalls[0].function.arguments.severity }}\nUrgent Symtoms:{{ $json.body.message.toolCalls[0].function.arguments['Urgent Symtoms'] }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are a compassionate AI triage assistant specializing in women's health and hormonal wellness. Your goal is to assess user symptoms, estimate their urgency, and classify the case into one of three categories: 1. wellness_plan — mild symptoms that can be managed with self-care and lifestyle recommendations. 2. doctor_review — moderate symptoms needing telehealth doctor review. 3. red_alert — severe symptoms requiring immediate medical attention. Be empathetic, clear, and evidence-aware. Always ask for missing info if needed (like age or symptom duration). Provide the patient name, age, symptoms list, duration, severity (mild/moderate/severe), triage score (0-100), triage category (wellness_plan/doctor_review/red_alert), and any additional notes."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -3184,
+        2192
+      ],
+      "id": "584e9a8f-0ac0-4411-9740-591c704a2475",
+      "name": "Triage Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a medical appointment scheduler. Based on the patient information - Name: {{ $json.name }}, Age: {{ $json.age }}, Symptoms: {{ $json.symptoms }}, Duration: {{ $json.duration }} - suggest available appointment times and prepare booking details for a telehealth consultation with a women's health specialist.Use Tools \"Doctors_schedule\" to confirm booking of available doctors and onece booked note down the details in \"Patient appointment sheet\" tool.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -2160,
+        2480
+      ],
+      "id": "f65d5b6b-922f-42e2-b6bb-ea429c49369d",
+      "name": "Doctor Appointment Agent2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Based on the triage assessment, create a personalized wellness plan for {{ $json.name }}. Consider their symptoms: {{ $json.symptoms }}, severity: {{ $json.severity }}, and duration: {{ $json.duration }}. Provide actionable recommendations for lifestyle, nutrition, stress management, and self-care.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -1584,
+        2080
+      ],
+      "id": "dda9ce46-ce97-48ea-a988-23f23914be3a",
+      "name": "Women Wellness Agent1"
+    },
+    {
+      "parameters": {
+        "content": "# Triage Agent \n\n## This agent can take interact with the patient get the information from the patient and then triage it to the LLM For couselling ,wellness plan \n## Send it to the doctor appointment agent by integtaring it with EHR and bok appointment .",
+        "height": 912,
+        "width": 976,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3584,
+        1856
+      ],
+      "typeVersion": 1,
+      "id": "a7ab6aae-d2aa-4da9-9905-dc5dea095369",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Execution Node\n\n## Send to Doctor Appointment agent to book appointment.\n\n## Alert Agent Alert the team about the potential harmful patient to rescue>\n",
+        "height": 928,
+        "width": 1024
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2096,
+        1920
+      ],
+      "typeVersion": 1,
+      "id": "2e6736a4-8a2d-42b2-b4c3-3ae745210a21",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1wl1Oi2osgZTLDZCRCDJrqNuQHSfMcYQ2ehlZMFwqt8w",
+          "mode": "list",
+          "cachedResultName": "Patient Booking Data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1wl1Oi2osgZTLDZCRCDJrqNuQHSfMcYQ2ehlZMFwqt8w/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1wl1Oi2osgZTLDZCRCDJrqNuQHSfMcYQ2ehlZMFwqt8w/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Patient Name": "={{ $json.name }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Patient Name",
+              "displayName": "Patient Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Doctor Name ",
+              "displayName": "Doctor Name ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date ",
+              "displayName": "Date ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Time",
+              "displayName": "Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -2032,
+        2704
+      ],
+      "id": "613c6914-720b-4772-aef7-d84653c3c39c",
+      "name": "Patient Booking Data",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "tfAYfg0KLsu8PqiM",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1rb19W81hbvwamgmkK04Z3hNE4gpLrU6wAEgunTAJWhg",
+          "mode": "list",
+          "cachedResultName": "fictional_doctors_pakistan",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rb19W81hbvwamgmkK04Z3hNE4gpLrU6wAEgunTAJWhg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1906443011,
+          "mode": "list",
+          "cachedResultName": "fictional_doctors_pakistan",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rb19W81hbvwamgmkK04Z3hNE4gpLrU6wAEgunTAJWhg/edit#gid=1906443011"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -2336,
+        2656
+      ],
+      "id": "4e8bcee3-df7a-4823-a039-f4fa445da5fa",
+      "name": "Doctors Schedule",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "tfAYfg0KLsu8PqiM",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Triage Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Triage Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Triage Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Doctor Appointment Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Women Wellness Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Doctor Appointment Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Red Alert Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Women Wellness Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Book Doctor Appointment": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Red Alert Email": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Triage Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Triage Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Doctor Appointment Agent2": {
+      "main": [
+        [
+          {
+            "node": "Book Doctor Appointment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Women Wellness Agent1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Patient Booking Data": {
+      "ai_tool": [
+        [
+          {
+            "node": "Doctor Appointment Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Doctors Schedule": {
+      "ai_tool": [
+        [
+          {
+            "node": "Doctor Appointment Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c35f461e-0b7b-47fe-b7ea-3b759597bf6a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "56e0563d9fcf64c45488260cce76e522b1c200f72876af6a437bfbce8cc85a27"
+  },
+  "id": "cwSnUVgBKnrg4iU4",
+  "tags": []
+}
